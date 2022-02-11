@@ -7,3 +7,6 @@ Modelo de negocios: OK
 
 Repositorio de product: OK
   obterTodos, obterPorId, adicionar, atualizar, deletar. 
+
+Service de produto: OK
+  obterTodos, obterPorId, adicionar, atualizar, deletar.
