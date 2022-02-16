@@ -2,10 +2,14 @@ package com.teste.primeiroexemplo.services;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import com.teste.primeiroexemplo.model.Produto;
+import com.teste.primeiroexemplo.model.exception.ResourceNotFoundException;
 import com.teste.primeiroexemplo.repository.ProdutoRepository;
+import com.teste.primeiroexemplo.shared.ProdutoDTO;
 
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +24,13 @@ public class ProdutoService {
    * 
    * @return Lista de produtos.
    */
-  public List<Produto> obterTodos() {
-    return produtoRepository.findAll();
+  public List<ProdutoDTO> obterTodos() {
+
+    // Retorna uma lista de produtos model.
+    List<Produto> produtos = produtoRepository.findAll();
+
+    return produtos.stream().map(produto -> new ModelMapper().map(produto, ProdutoDTO.class))
+        .collect(Collectors.toList());
   }
 
   /**
@@ -30,8 +39,20 @@ public class ProdutoService {
    * @param id do produto que será localizado.
    * @return Retorna um produto casa tenha seja encontrado.
    */
-  public Optional<Produto> obterPorId(Integer id) {
-    return produtoRepository.findById(id);
+  public Optional<ProdutoDTO> obterPorId(Integer id) {
+    // Obtendo optional de produto pelo id.
+    Optional<Produto> produto = produtoRepository.findById(id);
+
+    // Se não encontrar, lança exception
+    if (produto.isEmpty()) {
+      throw new ResourceNotFoundException("Produto com id: " + id + " não encontrado");
+    }
+
+    // Convertendo optional de produto em um produtoDTO
+    ProdutoDTO dto = new ModelMapper().map(produto.get(), ProdutoDTO.class);
+
+    // Criando e retornando optional de produtoDTO
+    return Optional.of(dto);
   }
 
   /**
@@ -40,7 +61,8 @@ public class ProdutoService {
    * @param produto que será adicionado.
    * @return Retorna o produto que foi adicionado na lista.
    */
-  public Produto adicionar(Produto produto) {
+  public ProdutoDTO adicionar(ProdutoDTO produtoDto) {
+
     return produtoRepository.save(produto);
   }
 
@@ -50,10 +72,10 @@ public class ProdutoService {
    * @param produto que será atualizado.
    * @return Retorna o produto após atualizar a lista
    */
-  public Produto atualizar(Integer id, Produto produto) {
+  public ProdutoDTO atualizar(Integer id, ProdutoDTO produto) {
     produto.setId(id);
 
-    return produtoRepository.atualizar(produto);
+    return produtoRepository.save(produto);
   }
 
   /**
