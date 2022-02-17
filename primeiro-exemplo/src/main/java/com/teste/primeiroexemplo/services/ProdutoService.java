@@ -62,8 +62,21 @@ public class ProdutoService {
    * @return Retorna o produto que foi adicionado na lista.
    */
   public ProdutoDTO adicionar(ProdutoDTO produtoDto) {
+    produtoDto.setId(null);
 
-    return produtoRepository.save(produto);
+    // Criar um objeto de mapeamento
+    ModelMapper mapper = new ModelMapper();
+
+    // Converter produtoDTO em um Produto
+    Produto produto = mapper.map(produtoDto, Produto.class);
+
+    // Salvar o Produto no banco
+    produto = produtoRepository.save(produto);
+
+    produtoDto.setId(produto.getId());
+
+    // Retornar o ProdutoDTO atualizado.
+    return produtoDto;
   }
 
   /**
@@ -72,10 +85,21 @@ public class ProdutoService {
    * @param produto que será atualizado.
    * @return Retorna o produto após atualizar a lista
    */
-  public ProdutoDTO atualizar(Integer id, ProdutoDTO produto) {
-    produto.setId(id);
+  public ProdutoDTO atualizar(Integer id, ProdutoDTO produtoDto) {
+    // Passar id para o produtoDto
+    produtoDto.setId(id);
 
-    return produtoRepository.save(produto);
+    // Criar um objeto de mapeamento
+    ModelMapper mapper = new ModelMapper();
+
+    // Converter o ProdutoDTO em um Produto
+    Produto produto = mapper.map(produtoDto, Produto.class);
+
+    // Atualizar o produto no Banco
+    produtoRepository.save(produto);
+
+    // Retornar o produtoDto atualizado
+    return produtoDto;
   }
 
   /**
@@ -84,6 +108,14 @@ public class ProdutoService {
    * @param id do produto a ser deletado.
    */
   public void deletar(Integer id) {
+    // Verificar se produto existe
+    Optional<Produto> produto = produtoRepository.findById(id);
+
+    if (produto.isEmpty()) {
+      throw new ResourceNotFoundException(
+          "Não foi possivel deletar o produto com o id: " + id + " - Produto não existe");
+    }
+
     produtoRepository.deleteById(id);
   }
 }
